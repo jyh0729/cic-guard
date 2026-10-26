@@ -1,0 +1,200 @@
+{
+  "dataset": "CSE-CIC-IDS2018, Processed Traffic Data (CICFlowMeter)",
+  "files": [
+    "Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv"
+  ],
+  "task": "네트워크 흐름 1건이 SSH·FTP 무차별 대입 공격인지 판정",
+  "data_report": {
+    "raw_rows": 1048575,
+    "after_header_rows": 1048575,
+    "after_label_filter": 1048575,
+    "rows_with_missing_or_inf": 3824,
+    "after_dropna": 1044751,
+    "after_dedup": 603965,
+    "label_counts": {
+      "Benign": 509939,
+      "SSH-Bruteforce": 93973,
+      "FTP-BruteForce": 53
+    },
+    "attack_ratio": 0.1557,
+    "used_rows": 603965
+  },
+  "split": {
+    "train": 362379,
+    "validation": 120793,
+    "test": 120793
+  },
+  "baselines": {
+    "majority_all_benign": {
+      "validation": {
+        "accuracy": 0.8443,
+        "balanced_accuracy": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion_matrix": {
+          "tn": 101988,
+          "fp": 0,
+          "fn": 18805,
+          "tp": 0
+        },
+        "n": 120793
+      },
+      "test": {
+        "accuracy": 0.8443,
+        "balanced_accuracy": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "confusion_matrix": {
+          "tn": 101988,
+          "fp": 0,
+          "fn": 18805,
+          "tp": 0
+        },
+        "n": 120793
+      }
+    },
+    "port_rule_21_22": {
+      "validation": {
+        "accuracy": 0.9994,
+        "balanced_accuracy": 0.9996,
+        "precision": 0.9961,
+        "recall": 1.0,
+        "f1": 0.9981,
+        "confusion_matrix": {
+          "tn": 101915,
+          "fp": 73,
+          "fn": 0,
+          "tp": 18805
+        },
+        "n": 120793
+      },
+      "test": {
+        "accuracy": 0.9994,
+        "balanced_accuracy": 0.9996,
+        "precision": 0.9959,
+        "recall": 1.0,
+        "f1": 0.9979,
+        "confusion_matrix": {
+          "tn": 101910,
+          "fp": 78,
+          "fn": 0,
+          "tp": 18805
+        },
+        "n": 120793
+      }
+    }
+  },
+  "candidates": {
+    "logistic_regression": {
+      "validation": {
+        "accuracy": 0.999,
+        "balanced_accuracy": 0.9994,
+        "precision": 0.994,
+        "recall": 0.9998,
+        "f1": 0.9969,
+        "confusion_matrix": {
+          "tn": 101875,
+          "fp": 113,
+          "fn": 3,
+          "tp": 18802
+        },
+        "n": 120793
+      },
+      "train_seconds": 2.3
+    },
+    "random_forest": {
+      "validation": {
+        "accuracy": 1.0,
+        "balanced_accuracy": 0.9999,
+        "precision": 0.9999,
+        "recall": 0.9999,
+        "f1": 0.9999,
+        "confusion_matrix": {
+          "tn": 101987,
+          "fp": 1,
+          "fn": 2,
+          "tp": 18803
+        },
+        "n": 120793
+      },
+      "train_seconds": 39.1
+    }
+  },
+  "best_model": "random_forest",
+  "threshold": 0.5,
+  "test": {
+    "accuracy": 1.0,
+    "balanced_accuracy": 1.0,
+    "precision": 0.9999,
+    "recall": 0.9999,
+    "f1": 0.9999,
+    "confusion_matrix": {
+      "tn": 101987,
+      "fp": 1,
+      "fn": 1,
+      "tp": 18804
+    },
+    "n": 120793,
+    "train_accuracy": 1.0,
+    "per_label": {
+      "Benign": {
+        "n": 101988,
+        "false_alarm_rate": 0.0
+      },
+      "FTP-BruteForce": {
+        "n": 10,
+        "detected_rate": 1.0
+      },
+      "SSH-Bruteforce": {
+        "n": 18795,
+        "detected_rate": 0.9999
+      }
+    },
+    "login_ports_only": {
+      "accuracy": 0.9999,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 0.9999,
+      "f1": 1.0,
+      "confusion_matrix": {
+        "tn": 78,
+        "fp": 0,
+        "fn": 1,
+        "tp": 18804
+      },
+      "n": 18883
+    }
+  },
+  "unseen_attack": {
+    "trained_without": "SSH-Bruteforce",
+    "ssh_detected_rate": 0.0001,
+    "benign_false_alarm_rate": 0.0
+  },
+  "feature_importance": {
+    "fwd_seg_size_min": 0.2553,
+    "fwd_bytes": 0.1656,
+    "bwd_packets": 0.1597,
+    "init_fwd_win_bytes": 0.1399,
+    "fwd_packets": 0.0779,
+    "bwd_bytes": 0.0735,
+    "flow_bytes_per_s": 0.0316,
+    "fwd_pkt_len_mean": 0.0233,
+    "init_bwd_win_bytes": 0.0141,
+    "fwd_iat_mean_us": 0.0131,
+    "flow_iat_mean_us": 0.0124,
+    "flow_pkts_per_s": 0.0109,
+    "bwd_pkt_len_mean": 0.0101,
+    "psh_flags": 0.0072,
+    "flow_duration_us": 0.0052,
+    "down_up_ratio": 0.0001,
+    "ack_flags": 0.0001,
+    "rst_flags": 0.0,
+    "syn_flags": 0.0
+  },
+  "warnings": [
+    "테스트 정확도 1.0 ≥ 0.97: 과도하게 높음. 피처 중요도·누수·미지 공격 결과를 확인할 것"
+  ],
+  "sklearn_version": "1.6.1"
+}
