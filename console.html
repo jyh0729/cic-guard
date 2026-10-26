@@ -1,0 +1,139 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LoginGuard 관제 콘솔</title>
+<style>
+:root{--bg:#0f1420;--panel:#171e2e;--panel2:#1e2739;--line:#2a3550;--ink:#e6eaf2;--sub:#8a96ad;
+--ok:#22c55e;--bad:#ef4444;--warn:#f59e0b;--pri:#3b82f6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font-family:system-ui,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:14px}
+header{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:18px;margin:0}.meta{color:var(--sub);font-size:12px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--sub);margin-right:6px}
+.dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+main{padding:18px 22px;display:grid;gap:16px;max-width:1700px;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi .v{font-size:26px;font-weight:700;margin-top:4px}.kpi .l{color:var(--sub);font-size:12px}
+.row{display:grid;grid-template-columns:1fr 330px;gap:16px}@media(max-width:1100px){.row{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.panel h2{font-size:14px;margin:0 0 10px;color:var(--sub);font-weight:600}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--sub);font-weight:500;font-size:12px}.tbl{max-height:560px;overflow:auto}
+.badge{padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.block{background:rgba(239,68,68,.15);color:var(--bad)}.verify{background:rgba(245,158,11,.15);color:var(--warn)}
+.allow{background:rgba(34,197,94,.15);color:var(--ok)}
+.pw-ok{color:var(--ok)}.pw-no{color:var(--sub)}
+.reason{display:inline-block;font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-right:3px}
+.bar{height:6px;background:var(--panel2);border-radius:3px;width:70px;display:inline-block;vertical-align:middle;margin-right:6px}
+.bar i{display:block;height:100%;border-radius:3px}
+button{font:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:7px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--pri)}button.pri{background:var(--pri);border-color:var(--pri)}button.sm{padding:3px 8px;font-size:12px}
+.fb-ok{color:var(--ok);font-size:12px}.fb-bad{color:var(--warn);font-size:12px}
+label{color:var(--sub);font-size:12px;display:block;margin:10px 0 4px}input[type=range]{width:100%}
+textarea{width:100%;height:150px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font:12px ui-monospace,monospace}
+.muted{color:var(--sub);font-size:12px}.hint{font-size:11px;color:var(--sub)}.res{margin-top:8px;font-size:13px}
+</style></head><body>
+<header>
+  <h1>🛡️ LoginGuard 보안 관제 콘솔</h1>
+  <span class="meta"><span id="dot" class="dot"></span><span id="streamTxt">대기</span></span>
+  <span class="meta" id="modelTxt"></span>
+  <span class="meta" id="logTxt"></span>
+</header>
+<main>
+  <div class="kpis">
+    <div class="kpi"><div class="l">로그인 시도</div><div class="v" id="k_total">0</div></div>
+    <div class="kpi"><div class="l">허용</div><div class="v" id="k_allow" style="color:var(--ok)">0</div></div>
+    <div class="kpi"><div class="l">추가 인증</div><div class="v" id="k_verify" style="color:var(--warn)">0</div></div>
+    <div class="kpi"><div class="l">차단</div><div class="v" id="k_block" style="color:var(--bad)">0</div></div>
+    <div class="kpi"><div class="l">판정 정확도 (정답 입력 기준)</div><div class="v" id="k_acc">-</div></div>
+    <div class="kpi"><div class="l">오탐 / 놓친 공격</div><div class="v" id="k_err">0 / 0</div></div>
+  </div>
+  <div class="row">
+    <div class="panel">
+      <h2>실시간 로그인 판정 <span class="hint">— 확인한 건은 정답을 눌러 주세요 (모델 개선용 로그로 저장)</span></h2>
+      <div class="tbl"><table>
+        <thead><tr><th>시각</th><th>계정</th><th>IP</th><th>국가</th><th>기기</th><th>비밀번호</th><th>위험 점수</th><th>판정</th><th>위험 신호</th><th>정답 입력</th><th class="lab">데이터셋 정답</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="11" class="muted">오른쪽에서 ‘수신 시작’을 누르세요. 처음에는 데이터 준비에 1~2분 걸립니다.</td></tr></tbody>
+      </table></div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2>로그인 기록 수신</h2>
+        <button class="pri" id="btnRun">수신 시작</button>
+        <div class="hint" id="poolTxt" style="margin-top:6px"></div>
+        <label>수신 간격 <b id="ivTxt">1.5</b>초</label><input type="range" id="iv" min="0.3" max="5" step="0.1" value="1.5">
+        <label>공격 비율 <b id="arTxt">30</b>%</label><input type="range" id="ar" min="0" max="100" step="5" value="30">
+        <label><input type="checkbox" id="showLabel"> 데이터셋 정답 보기 (정답 입력 참고용)</label>
+        <p class="hint">데모: RBA 데이터셋의 실제 로그인 기록을 재생합니다.</p>
+      </div>
+      <div class="panel">
+        <h2>로그인 기록 직접 판정</h2>
+        <textarea id="ev">{"user_id": "user-1001", "ip": "185.220.0.10", "country": "RU", "asn": 12345,
+ "device_type": "desktop", "browser": "Chrome 80.0", "os": "Windows 10",
+ "success": false}</textarea>
+        <button id="btnManual" style="margin-top:8px">판정</button>
+        <div class="res" id="manualRes"></div>
+        <p class="hint">같은 IP로 계정만 바꿔 여러 번 보내면 위험 점수가 올라갑니다.</p>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const LBL = {allow:"허용", verify:"추가 인증", block:"차단"};
+let running = false, synced = false;
+async function api(path, body){
+  const r = await fetch(path, body ? {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)} : {});
+  return {ok:r.ok, j: await r.json()};
+}
+const esc = s => String(s ?? "-").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shortId = s => s.length > 12 ? "…" + s.slice(-8) : s;
+const color = p => p >= .9 ? "var(--bad)" : p >= .5 ? "var(--warn)" : "var(--ok)";
+function fbCell(e){
+  if (e.feedback){
+    const ok = (e.decision !== "allow") === (e.feedback === "attack");
+    return `<span class="${ok ? "fb-ok" : "fb-bad"}">${e.feedback === "attack" ? "공격" : "정상"} · ${ok ? "판정 맞음" : (e.decision !== "allow" ? "오탐" : "놓친 공격")}</span>`;
+  }
+  return `<button class="sm" onclick="fb('${e.request_id}','attack')">공격 맞음</button> <button class="sm" onclick="fb('${e.request_id}','normal')">정상</button>`;
+}
+async function fb(id, actual){ await api("/feedback", {request_id:id, actual}); refresh(); }
+async function refresh(){
+  const {j:s} = await api("/api/state");
+  running = s.stream.running;
+  if (!synced){ $("iv").value = s.stream.interval; $("ivTxt").textContent = s.stream.interval;
+    $("ar").value = Math.round(s.stream.attack_ratio*100); $("arTxt").textContent = $("ar").value; synced = true; }
+  $("dot").className = "dot" + (running ? " on" : "");
+  $("streamTxt").textContent = running ? "수신 중" : "대기";
+  $("btnRun").textContent = running ? "수신 중지" : "수신 시작";
+  $("poolTxt").textContent = s.stream.pool_error ? "데이터 준비 오류: " + s.stream.pool_error : "재생 데이터: " + s.stream.pool;
+  $("modelTxt").textContent = `모델 ${s.model_version} · 추가 인증 ≥ ${s.thresholds.verify} · 차단 ≥ ${s.thresholds.block}`;
+  $("logTxt").textContent = s.log.cloudwatch ? `CloudWatch ${s.log.group} / ${s.log.stream} (${s.log.sent}건 전송)` + (s.log.error ? " ⚠ " + s.log.error : "")
+                                             : (s.log.error ? "CloudWatch 오류: " + s.log.error : "로그: " + s.log.file);
+  const st = s.stats;
+  $("k_total").textContent = st.total; $("k_allow").textContent = st.allow; $("k_verify").textContent = st.verify; $("k_block").textContent = st.block;
+  $("k_acc").textContent = st.feedback ? (st.correct / st.feedback * 100).toFixed(1) + "% (" + st.feedback + "건)" : "-";
+  $("k_err").textContent = `${st.false_positive} / ${st.false_negative}`;
+  const show = $("showLabel").checked;
+  document.querySelectorAll(".lab").forEach(el => el.style.display = show ? "" : "none");
+  if (!s.events.length) return;
+  $("rows").innerHTML = s.events.map(e => `<tr>
+    <td>${e.time}</td><td title="${esc(e.user_id)}">${esc(shortId(e.user_id))}</td><td>${esc(e.ip)}</td><td>${esc(e.country)}</td><td>${esc(e.device_type)}</td>
+    <td class="${e.success ? "pw-ok" : "pw-no"}">${e.success ? "성공" : "실패"}</td>
+    <td><span class="bar"><i style="width:${e.risk_score*100}%;background:${color(e.risk_score)}"></i></span>${(e.risk_score*100).toFixed(1)}%</td>
+    <td><span class="badge ${e.decision}">${LBL[e.decision]}</span></td>
+    <td title="${esc(e.reasons.join(", "))}">${e.reasons.slice(0,2).map(r => `<span class="reason">${esc(r)}</span>`).join("") + (e.reasons.length > 2 ? `<span class="reason">+${e.reasons.length-2}</span>` : "") || '<span class="muted">-</span>'}</td>
+    <td>${fbCell(e)}</td><td class="lab muted" style="display:${show ? "" : "none"}">${esc(e.dataset_label)}</td></tr>`).join("");
+}
+$("btnRun").onclick = async () => { await api("/api/stream", {running: !running}); refresh(); };
+$("iv").oninput = e => { $("ivTxt").textContent = e.target.value; api("/api/stream", {interval: +e.target.value}); };
+$("ar").oninput = e => { $("arTxt").textContent = e.target.value; api("/api/stream", {attack_ratio: e.target.value / 100}); };
+$("showLabel").onchange = refresh;
+$("btnManual").onclick = async () => {
+  let ev; try { ev = JSON.parse($("ev").value); } catch { $("manualRes").textContent = "JSON 형식이 아닙니다"; return; }
+  const {ok, j} = await api("/predict", ev);
+  $("manualRes").innerHTML = ok ? `<span class="badge ${j.decision}">${LBL[j.decision]}</span> 위험 점수 ${(j.risk_score*100).toFixed(1)}% ${j.reasons.map(r => `<span class="reason">${esc(r)}</span>`).join("")}`
+                                : `오류 (${typeof j.detail === "string" ? esc(j.detail) : esc(j.detail?.[0]?.msg)})`;
+  refresh();
+};
+refresh(); setInterval(refresh, 1000);
+</script></body></html>
