@@ -1,0 +1,20 @@
+2026-10-26 06:45:50,499 INFO NumExpr defaulting to 2 threads.
+2026-10-26 06:45:50,914 INFO model_loaded path=/content/cic-guard/models/model.joblib version=random_forest@0451d7b2ec73
+INFO:     Started server process [3042]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42962 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42978 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42988 - "GET /ready HTTP/1.1" 200 OK
+2026-10-26 06:46:07,376 INFO predict id=7dfa737f579e decision=allow p=0.0000 ms=36.2
+INFO:     127.0.0.1:60682 - "POST /predict HTTP/1.1" 200 OK
+2026-10-26 06:46:07,452 INFO predict id=252867c2fdf3 decision=block p=0.9450 ms=34.5
+INFO:     127.0.0.1:60684 - "POST /predict HTTP/1.1" 200 OK
+2026-10-26 06:46:07,530 INFO predict id=4100534e63c1 decision=block p=1.0000 ms=34.0
+INFO:     127.0.0.1:60690 - "POST /predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60700 - "POST /predict HTTP/1.1" 422 Unprocessable Content
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3042]

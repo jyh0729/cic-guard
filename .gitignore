@@ -1,0 +1,4 @@
+__pycache__/
+.pytest_cache/
+data/*.csv
+models/model.joblib
